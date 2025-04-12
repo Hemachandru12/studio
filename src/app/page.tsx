@@ -29,6 +29,18 @@ import {toast} from '@/hooks/use-toast';
 import {customizeWorkoutPlan} from '@/ai/flows/customize-workout-plan';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
 import {HelpCircle} from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const formSchema = z.object({
   weight: z.coerce.number().min(1, {message: 'Weight must be greater than 0'}),
@@ -103,6 +115,35 @@ export default function Home() {
       });
     }
   }
+
+  const downloadPdf = () => {
+    if (!workoutPlan) {
+      toast({
+        variant: 'destructive',
+        title: 'No workout plan available',
+        description: 'Please generate a workout plan first.',
+      });
+      return;
+    }
+
+    const doc = new jsPDF();
+    doc.text('Workout Plan', 10, 10);
+
+    // Parse the workout plan into table rows
+    const rows = workoutPlan.split('\n').map(row => {
+        return [row]; // Each row in the workout plan becomes a row in the table
+    });
+
+    (doc as any).autoTable({
+        head: [['Exercise']], // Table header
+        body: rows, // Table body
+    });
+
+    doc.save('workout_plan.pdf');
+  };
+
+  const parsedWorkoutPlan = workoutPlan ? workoutPlan.split('\n') : [];
+  const parsedCustomizedPlan = customizedPlan ? customizedPlan.split('\n') : [];
 
   return (
     <div className="container mx-auto py-10">
@@ -237,32 +278,49 @@ export default function Home() {
           <CardContent className="space-y-4">
             {workoutPlan ? (
               <div className="space-y-2">
-                <p className="text-sm">
-                  {customizedPlan ? (
-                    customizedPlan
-                  ) : (
-                    workoutPlan
-                  )}
-                </p>
+                <Table>
+                  <TableCaption>A personalized daily workout plan based on your inputs.</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">Exercise</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {customizedPlan ? (
+                      parsedCustomizedPlan.map((exercise, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{exercise}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      parsedWorkoutPlan.map((exercise, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{exercise}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+                <Button onClick={downloadPdf}>Download as PDF</Button>
                 {!customizedPlan && (
-                    <TooltipProvider>
-                      <div className="flex items-center space-x-2">
-                        <Textarea
-                          id="injuryInformation"
-                          placeholder="Enter any injury information to customize the plan"
-                          className="resize-none"
-                          onBlur={(e) => onCustomize(e.target.value)}
-                        />
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent side="right">
-                            Customize your workout plan by providing information about injuries or limitations.
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </TooltipProvider>
+                  <TooltipProvider>
+                    <div className="flex items-center space-x-2">
+                      <Textarea
+                        id="injuryInformation"
+                        placeholder="Enter any injury information to customize the plan"
+                        className="resize-none"
+                        onBlur={(e) => onCustomize(e.target.value)}
+                      />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          Customize your workout plan by providing information about injuries or limitations.
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
                 )}
               </div>
             ) : (
