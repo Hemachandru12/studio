@@ -39,8 +39,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 
 const formSchema = z.object({
   weight: z.coerce.number().min(1, {message: 'Weight must be greater than 0'}),
@@ -116,7 +114,7 @@ export default function Home() {
     }
   }
 
-  const downloadPdf = () => {
+  const downloadPdf = async () => {
     if (!workoutPlan) {
       toast({
         variant: 'destructive',
@@ -126,20 +124,32 @@ export default function Home() {
       return;
     }
 
-    const doc = new jsPDF();
-    doc.text('Workout Plan', 10, 10);
+    try {
+      const jsPDF = (await import('jspdf')).default;
+      (await import('jspdf-autotable'));
 
-    // Parse the workout plan into table rows
-    const rows = workoutPlan.split('\n').map(row => {
-        return [row]; // Each row in the workout plan becomes a row in the table
-    });
+      const doc = new jsPDF();
+      doc.text('Workout Plan', 10, 10);
 
-    (doc as any).autoTable({
-        head: [['Exercise']], // Table header
-        body: rows, // Table body
-    });
+      // Parse the workout plan into table rows
+      const rows = workoutPlan.split('\n').map(row => {
+          return [row]; // Each row in the workout plan becomes a row in the table
+      });
 
-    doc.save('workout_plan.pdf');
+      (doc as any).autoTable({
+          head: [['Exercise']], // Table header
+          body: rows, // Table body
+      });
+
+      doc.save('workout_plan.pdf');
+    } catch (error: any) {
+      console.error('Error generating PDF:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error generating PDF',
+        description: error.message || 'Failed to generate PDF. Please try again.',
+      });
+    }
   };
 
   const parsedWorkoutPlan = workoutPlan ? workoutPlan.split('\n') : [];
@@ -304,7 +314,7 @@ export default function Home() {
                 <Button onClick={downloadPdf}>Download as PDF</Button>
                 {!customizedPlan && (
                   <TooltipProvider>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-y-2">
                       <Textarea
                         id="injuryInformation"
                         placeholder="Enter any injury information to customize the plan"
