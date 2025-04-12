@@ -1,5 +1,4 @@
-// 'use server';
-
+'use server';
 /**
  * @fileOverview Generates a personalized daily workout plan based on user inputs.
  *
@@ -8,7 +7,6 @@
  * - WorkoutPlanOutput - The return type for the generateWorkoutPlan function.
  */
 
-'use server';
 import {ai} from '@/ai/ai-instance';
 import {z} from 'genkit';
 
@@ -62,7 +60,7 @@ const prompt = ai.definePrompt({
         .describe('A personalized daily workout plan based on your inputs.'),
     }),
   },
-  prompt: `You are a personal trainer. Generate a workout plan based on the user's information.
+  prompt: `You are a personal trainer. Generate a workout plan based on the user's information. The workout plan must be in a table format with the following columns: Exercise, Sets, Reps, Weights, Rest Between Sets.
 
   Consider the following information when generating the workout plan:
 
@@ -73,8 +71,18 @@ const prompt = ai.definePrompt({
   End Goal: {{{endGoal}}}
   Injury Information: {{{injuryInformation}}}
   
-  The workout plan should include specific exercises, sets, reps, and rest times.
+  The workout plan should include specific exercises, sets, reps, weights, and rest times.
   Make sure to take into account any injury information provided.
+  
+  Example:
+
+  Exercise   | Sets | Reps       | Weights | Rest Between Sets
+  -----------|------|------------|---------|--------------------
+  Push-ups   | 3    | 10         | --      | 60 seconds
+  Squats     | 3    | 10         | --      | 60 seconds
+  Plank      | 3    | 30 seconds | --      | 60 seconds
+  
+  Make sure to use the column names "Exercise", "Sets", "Reps", "Weights", and "Rest Between Sets".
   `,
 });
 
