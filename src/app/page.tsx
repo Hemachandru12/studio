@@ -28,7 +28,6 @@ import {Button} from '@/components/ui/button';
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -102,12 +101,12 @@ export default function IndexPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-light-gray py-12">
-      <Card className="w-[800px] bg-white rounded-lg shadow-md">
+    <div className="flex justify-center items-center min-h-screen py-12">
+      <Card className="w-[800px] rounded-lg shadow-md">
         <CardHeader className="flex flex-col items-start space-y-1">
           <CardTitle className="text-2xl font-semibold">FitPlanAI</CardTitle>
           <CardDescription className="text-sm text-gray-500">
-            Enter your details to generate a personalized workout plan.
+          Enter your details to generate a personalized workout plan.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -274,7 +273,7 @@ export default function IndexPage() {
           <ScrollArea className="h-[400px] w-full rounded-md border p-4">
               {plan ? (
                 <div className="w-full overflow-auto">
-                  <Table>
+                  <Table className="mx-auto">
                     <TableHeader>
                       <TableRow>
                         {getTableData()[0]?.map((header, index) => (
@@ -305,3 +304,4 @@ export default function IndexPage() {
     </div>
   );
 }
+
