@@ -76,7 +76,11 @@ export default function IndexPage() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    generateWorkoutPlan(values).then(result => {
+    generateWorkoutPlan({
+      ...values,
+      weight: Number(values.weight), // Ensure weight is a number
+      height: Number(values.height), // Ensure height is a number
+    }).then(result => {
       console.log('Workout plan:', result.workoutPlan);
       setPlan(result.workoutPlan);
       setOpen(true);
@@ -304,4 +308,3 @@ export default function IndexPage() {
     </div>
   );
 }
-
