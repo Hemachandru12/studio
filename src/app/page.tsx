@@ -58,7 +58,7 @@ const formSchema = z.object({
 
 export default function IndexPage() {
   const [open, setOpen] = useState(false);
-  const [plan, setPlan] = useState<{[muscle: string]: string}>({});
+  const [plan, setPlan] = useState<string>("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     defaultValues: {
@@ -73,27 +73,19 @@ export default function IndexPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const workoutPlans: {[muscle: string]: string} = {};
-
-    for (const muscle of values.muscles) {
       const result = await generateWorkoutPlan({
         ...values,
         weight: Number(values.weight), // Ensure weight is a number
         height: Number(values.height), // Ensure height is a number
-        muscle: muscle, // Pass individual muscle group
       });
-      workoutPlans[muscle] = result.workoutPlan;
-    }
-
-    setPlan(workoutPlans);
-    setOpen(true);
+      setPlan(result.workoutPlan);
+      setOpen(true);
   }
 
-  const getTableData = (muscle: string) => {
-    if (!plan[muscle]) return [];
+  const getTableData = () => {
+    if (!plan) return [];
   
-    const rawPlan = plan[muscle];
-    const lines = rawPlan.split('\n');
+    const lines = plan.split('\n');
     if (lines.length < 2) return [];
   
     const header = lines[0].split('|').map(header => header.trim());
@@ -280,33 +272,26 @@ export default function IndexPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-              {Object.keys(plan).length > 0 ? (
-                <div>
-                  {Object.entries(plan).map(([muscle, workoutPlan]) => (
-                    <div key={muscle} className="mb-4">
-                      <h3 className="text-lg font-semibold mb-2">{muscle}</h3>
-                      <div className="w-full overflow-auto">
-                        <Table className="mx-auto">
-                          <TableHeader>
-                            <TableRow>
-                              {getTableData(muscle)[0]?.map((header, index) => (
-                                <TableHead key={index}>{header}</TableHead>
-                              ))}
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {getTableData(muscle).slice(1).map((row, rowIndex) => (
-                              <TableRow key={rowIndex}>
-                                {row.map((cell, cellIndex) => (
-                                  <TableCell key={cellIndex}>{cell}</TableCell>
-                                ))}
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </div>
-                  ))}
+              {plan ? (
+                <div className="w-full overflow-auto">
+                  <Table className="mx-auto">
+                    <TableHeader>
+                      <TableRow>
+                        {getTableData()[0]?.map((header, index) => (
+                          <TableHead key={index}>{header}</TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {getTableData().slice(1).map((row, rowIndex) => (
+                        <TableRow key={rowIndex}>
+                          {row.map((cell, cellIndex) => (
+                            <TableCell key={cellIndex}>{cell}</TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               ) : (
                 <div className="text-center">Loading...</div>
