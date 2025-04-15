@@ -73,7 +73,7 @@ const prompt = ai.definePrompt({
   End Goal: {{{endGoal}}}
   Injury Information: {{{injuryInformation}}}
   
-  The workout plan should include specific exercises, sets, reps, weights, and rest times.
+  The workout plan should include specific exercises, sets, reps, weights, and rest times for the selected muscles.
   Make sure to take into account any injury information provided.
   Focus on the following muscles: {{{muscles}}}
 
@@ -86,6 +86,7 @@ const prompt = ai.definePrompt({
   Plank      | 3    | 30 seconds | --      | 60 seconds
   
   Make sure to use the column names "Exercise", "Sets", "Reps", "Weights", and "Rest Between Sets".
+  Do not provide any introductory or concluding sentences. Only provide the workout plan in the specified tabular format.
   `,
 });
 
