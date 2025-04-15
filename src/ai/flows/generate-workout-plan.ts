@@ -77,7 +77,7 @@ const prompt = ai.definePrompt({
   Make sure to take into account any injury information provided.
   Focus on the following muscles: {{{muscles}}}
 
-  Example:
+  Here is the format
 
   Exercise   | Sets | Reps       | Weights | Rest Between Sets
   -----------|------|------------|---------|--------------------
