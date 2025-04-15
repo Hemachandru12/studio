@@ -159,7 +159,7 @@ export default function IndexPage() {
                     <FormLabel>Gender</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <SelectTrigger>
-                        {field.value === 'male' ? 'Male' : 'Female'}
+                        {field.value}
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="male">Male</SelectItem>
@@ -266,8 +266,8 @@ export default function IndexPage() {
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Your Workout Plan</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-center">Your Workout Plan</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
               Here is your personalized workout plan for today.
             </AlertDialogDescription>
           </AlertDialogHeader>
