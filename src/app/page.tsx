@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
 import {Select, SelectContent, SelectItem, SelectTrigger} from '@/components/ui/select';
 import {generateWorkoutPlan} from '@/ai/flows/generate-workout-plan';
 import {useForm} from 'react-hook-form';
@@ -45,7 +44,6 @@ const muscleGroups = [
   'Triceps',
   'Legs',
   'Abs',
-  'Full Body',
 ];
 
 const formSchema = z.object({
@@ -55,7 +53,7 @@ const formSchema = z.object({
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
   endGoal: z.string().min(1, {message: 'End goal cannot be empty'}),
   injuryInformation: z.string().optional(),
-  muscles: z.array(z.string()).default([]), // Muscle selection
+  muscles: z.array(z.string()).min(1, {message: 'At least one muscle group must be selected'}).default([]), // Muscle selection
 });
 
 export default function IndexPage() {
@@ -254,8 +252,10 @@ export default function IndexPage() {
                           <FormLabel className="text-sm font-normal pl-2">{muscle}</FormLabel>
                         </FormItem>
                       ))}
+                      {form.formState.errors.muscles && (
+                        <FormMessage>{form.formState.errors.muscles.message}</FormMessage>
+                      )}
                     </div>
-                    <FormMessage />
                     <FormDescription>Select the muscle groups to focus on.</FormDescription>
                   </FormItem>
                 )}
