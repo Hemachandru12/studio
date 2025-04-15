@@ -20,6 +20,7 @@ const WorkoutPlanInputSchema = z.object({
   endGoal:
     z.string().describe('Your fitness goal (e.g., lose weight, build muscle).'),
   injuryInformation: z.string().optional().describe('Any injury information to take into account when building workout plan.'),
+  muscles: z.array(z.string()).describe('The muscles to focus on during the workout.'), // Muscle selection
 });
 
 export type WorkoutPlanInput = z.infer<typeof WorkoutPlanInputSchema>;
@@ -51,6 +52,7 @@ const prompt = ai.definePrompt({
       endGoal:
         z.string().describe('Your fitness goal (e.g., lose weight, build muscle).'),
         injuryInformation: z.string().optional().describe('Any injury information to take into account when building workout plan.'),
+        muscles: z.array(z.string()).describe('The muscles to focus on during the workout.'), // Muscle selection
     }),
   },
   output: {
@@ -70,10 +72,12 @@ const prompt = ai.definePrompt({
   Fitness Level: {{{fitnessLevel}}}
   End Goal: {{{endGoal}}}
   Injury Information: {{{injuryInformation}}}
+  Muscles: {{{muscles}}}
   
   The workout plan should include specific exercises, sets, reps, weights, and rest times.
   Make sure to take into account any injury information provided.
-  
+  Focus on the following muscles: {{{muscles}}}
+
   Example:
 
   Exercise   | Sets | Reps       | Weights | Rest Between Sets

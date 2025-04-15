@@ -30,13 +30,24 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
 
-import jsPDF from 'jspdf';
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Checkbox } from "@/components/ui/checkbox"
+
+const muscleGroups = [
+  'Chest',
+  'Back',
+  'Shoulders',
+  'Biceps',
+  'Triceps',
+  'Legs',
+  'Abs',
+  'Full Body',
+];
 
 const formSchema = z.object({
   weight: z.coerce.number().min(1, {message: 'Weight must be greater than 0'}),
@@ -45,6 +56,7 @@ const formSchema = z.object({
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
   endGoal: z.string().min(1, {message: 'End goal cannot be empty'}),
   injuryInformation: z.string().optional(),
+  muscles: z.array(z.string()).default([]), // Muscle selection
 });
 
 export default function IndexPage() {
@@ -59,6 +71,7 @@ export default function IndexPage() {
       fitnessLevel: 'beginner',
       endGoal: '',
       injuryInformation: '',
+      muscles: [], // Muscle selection
     },
   });
 
@@ -70,39 +83,6 @@ export default function IndexPage() {
       setOpen(true);
     });
   }
-
-  const downloadPdf = async () => {
-    if (!plan) return;
-
-    const pdf = new jsPDF();
-    pdf.text('Workout Plan', 10, 10);
-
-    const data = [];
-    const lines = plan.split('\n');
-    if (lines.length < 2) return;
-
-    const header = lines[0].split('|').map(header => header.trim());
-    const dataRows = lines.slice(1).map(row => {
-      return row.split('|').map(cell => cell.trim());
-    });
-
-    // Filter out empty rows (rows with only empty cells)
-    const filteredDataRows = dataRows.filter(row => {
-      return row.some(cell => cell !== ''); // Keep rows with at least one non-empty cell
-    });
-
-    // Dynamically import jspdf-autotable
-    const { default: autoTable } = await import('jspdf-autotable');
-
-    // Add the table to the PDF
-    (pdf as any).autoTable({
-      head: [header],
-      body: filteredDataRows,
-      startY: 20, // Adjust startY to leave space for the title
-    });
-
-    pdf.save('workout_plan.pdf');
-  };
 
   const getTableData = () => {
     if (!plan) return [];
@@ -122,11 +102,11 @@ export default function IndexPage() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-light-gray">
+    <div className="flex justify-center items-center min-h-screen bg-light-gray py-12">
       <Card className="w-[800px] bg-white rounded-lg shadow-md">
-        <CardHeader>
-          <CardTitle>FitPlanAI</CardTitle>
-          <CardDescription>
+        <CardHeader className="flex flex-col items-start space-y-1">
+          <CardTitle className="text-2xl font-semibold">FitPlanAI</CardTitle>
+          <CardDescription className="text-sm text-gray-500">
             Enter your details to generate a personalized workout plan.
           </CardDescription>
         </CardHeader>
@@ -244,6 +224,39 @@ export default function IndexPage() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="muscles"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Muscle Groups</FormLabel>
+                    <div className="flex flex-wrap gap-2">
+                      {muscleGroups.map((muscle) => (
+                        <FormItem
+                          key={muscle}
+                          className="space-y-0"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(muscle)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  field.onChange([...(field.value || []), muscle])
+                                } else {
+                                  field.onChange(field.value?.filter((val) => val !== muscle))
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="text-sm font-normal pl-2">{muscle}</FormLabel>
+                        </FormItem>
+                      ))}
+                    </div>
+                    <FormMessage />
+                    <FormDescription>Select the muscle groups to focus on.</FormDescription>
+                  </FormItem>
+                )}
+              />
               <Button type="submit">Generate Workout Plan</Button>
             </form>
           </Form>
@@ -251,44 +264,41 @@ export default function IndexPage() {
       </Card>
 
       <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Your Workout Plan</AlertDialogTitle>
             <AlertDialogDescription>
               Here is your personalized workout plan for today.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="grid gap-4 py-4">
-             {plan ? (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      {getTableData()[0]?.map((header, index) => (
-                        <TableHead key={index}>{header}</TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {getTableData().slice(1).map((row, rowIndex) => (
-                      <TableRow key={rowIndex}>
-                        {row.map((cell, cellIndex) => (
-                          <TableCell key={cellIndex}>{cell}</TableCell>
+          <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+              {plan ? (
+                <div className="w-full overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        {getTableData()[0]?.map((header, index) => (
+                          <TableHead key={index}>{header}</TableHead>
                         ))}
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div>Loading...</div>
-            )}
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <Button type="button" onClick={downloadPdf}>
-              Download PDF
-            </Button>
+                    </TableHeader>
+                    <TableBody>
+                      {getTableData().slice(1).map((row, rowIndex) => (
+                        <TableRow key={rowIndex}>
+                          {row.map((cell, cellIndex) => (
+                            <TableCell key={cellIndex}>{cell}</TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-center">Loading...</div>
+              )}
+          </ScrollArea>
+          <AlertDialogFooter className="justify-center">
+            <AlertDialogCancel>Close</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
